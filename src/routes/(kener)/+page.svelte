@@ -15,6 +15,7 @@
   import GMI from "$lib/components/gmi.svelte";
 
   export let data;
+
   let shareMenusToggle = false;
   function showShareMenu(e) {
     shareMenusToggle = true;
@@ -39,10 +40,30 @@
   function kindOfIncidents(kind) {
     kindFilter = kind;
   }
-
   if (data.allRecentIncidents.length == 0) {
     kindOfIncidents("MAINTENANCE");
   }
+
+  $: monitorStatus = (() => {
+    if (!data.monitors) return "OK";
+    if (
+      data.monitors.some((monitor) => {
+        const status = monitor.pageData?.summaryStatus?.toLowerCase() || "";
+        return status.includes("down");
+      })
+    ) {
+      return "DOWN";
+    }
+    if (
+      data.monitors.some((monitor) => {
+        const status = monitor.pageData?.summaryStatus?.toLowerCase() || "";
+        return status.includes("degraded");
+      })
+    ) {
+      return "DEGRADED";
+    }
+    return "OK";
+  })();
 </script>
 
 <svelte:head>
@@ -69,9 +90,57 @@
         {#if data.hero.image}
           <GMI src={data.hero.image} classList="m-auto mb-2 h-14 w-14" alt="" srcset="" />
         {/if}
-        {#if data.hero.title}
+        {#if monitorStatus == "OK"}
+          <div class="flex flex-col gap-5">
+            <div class="relative mx-auto h-fit w-fit">
+              <div class="absolute right-0 top-0 z-10 h-10 w-10 -translate-x-5 translate-y-5 bg-white" />
+              <div class="absolute inset-0 z-0 h-full w-full rounded-full bg-[#2A5AF4] opacity-40 blur-md" />
+              <img src={base + "/check_circle.svg"} class="relative z-20 inline-block h-20 w-20" alt="circle check" />
+            </div>
+            <div>
+              <h1 class="text-2xl">Celes esta en funcionamiento</h1>
+              <p class="color-[#414141] mt-1.5 w-full text-center text-lg">
+                ¿Tienes problemas? envíanos un correo electrónico a
+                <a href="mailto:feedback@slack.com" class="underline">help@biai.com</a>
+              </p>
+            </div>
+          </div>
+        {/if}
+        {#if monitorStatus == "DEGRADED"}
+          <div class="flex flex-col gap-5">
+            <div class="relative mx-auto h-fit w-fit">
+              <div class="absolute right-0 top-0 z-10 h-7 w-4 -translate-x-9 translate-y-8 bg-white" />
+              <div class="absolute inset-0 z-0 h-full w-full rounded-full bg-[#FFA337] opacity-20 blur-md" />
+              <img src={base + "/warning.svg"} class="relative z-20 inline-block h-20 w-20" alt="warning" />
+            </div>
+            <div>
+              <h1 class="text-2xl">Celes tiene errores que no comprometen su funcionamiento</h1>
+              <p class="color-[#414141] mt-1.5 w-full text-center text-lg">
+                ¿Tienes problemas? envíanos un correo electrónico a
+                <a href="mailto:feedback@slack.com" class="underline">help@biai.com</a>
+              </p>
+            </div>
+          </div>
+        {/if}
+        {#if monitorStatus == "DOWN"}
+          <div class="flex flex-col gap-5">
+            <div class="relative mx-auto h-fit w-fit">
+              <div class="absolute right-0 top-0 z-10 h-7 w-8 -translate-x-6 translate-y-8 bg-white" />
+              <div class="absolute inset-0 z-0 h-full w-full rounded-full bg-[#FF554E] opacity-20 blur-md" />
+              <img src={base + "/outage.svg"} class="relative z-20 inline-block h-20 w-20" alt="outage" />
+            </div>
+            <div>
+              <h1 class="text-2xl">Celes está caído. Estamos trabajando para solucionarlo</h1>
+              <p class="color-[#414141] mt-1.5 w-full text-center text-lg">
+                ¿Tienes problemas? envíanos un correo electrónico a
+                <a href="mailto:feedback@slack.com" class="underline">help@biai.com</a>
+              </p>
+            </div>
+          </div>
+        {/if}
+        <!-- {#if data.hero.title}
           <h1
-            class="bg-gradient-to-r from-green-300 via-blue-500 to-purple-600 bg-clip-text text-5xl font-extrabold leading-tight text-transparent"
+            class="bg-gradient-to-r from-white via-[#2A5AF4] to-[#2A5AF4] bg-clip-text text-5xl font-extrabold leading-tight text-transparent"
           >
             {@html data.hero.title}
           </h1>
@@ -80,7 +149,7 @@
           <h2 class="mx-auto mt-4 max-w-xl sm:text-xl">
             {@html data.hero.subtitle}
           </h2>
-        {/if}
+        {/if} -->
       </div>
     </div>
   </section>
@@ -103,53 +172,6 @@
       <ChevronLeft class="arrow mr-1 h-5 w-5" />
       {l(data.lang, "Back")}
     </Button>
-  </section>
-{/if}
-{#if data.allRecentIncidents.length + data.allRecentMaintenances.length > 0}
-  <section
-    class="section-events mx-auto mb-8 flex w-full max-w-[655px] flex-1 flex-col items-start justify-center backdrop-blur-[2px]"
-    id=""
-  >
-    <div class="mb-2 grid w-full grid-cols-2 gap-4">
-      <div class="col-span-2 flex gap-x-2 text-center md:text-left">
-        {#if kindFilter == "INCIDENT"}
-          {#if data.allRecentIncidents.length > 0}
-            <Button class="h-8   text-sm  " on:click={() => kindOfIncidents("INCIDENT")}>
-              {l(data.lang, "Recent Incidents")}
-            </Button>
-          {/if}
-          {#if data.allRecentMaintenances.length > 0}
-            <Button variant="secondary" class=" h-8 text-sm" on:click={() => kindOfIncidents("MAINTENANCE")}>
-              {l(data.lang, "Recent Maintenances")}
-            </Button>
-          {/if}
-        {:else}
-          {#if data.allRecentIncidents.length > 0}
-            <Button variant="secondary" class="h-8  text-sm " on:click={() => kindOfIncidents("INCIDENT")}>
-              {l(data.lang, "Recent Incidents")}
-            </Button>
-          {/if}
-          {#if data.allRecentMaintenances.length > 0}
-            <Button class="h-8  text-sm" on:click={() => kindOfIncidents("MAINTENANCE")}>
-              {l(data.lang, "Recent Maintenances")}
-            </Button>
-          {/if}
-        {/if}
-      </div>
-    </div>
-    <Card.Root class="w-full">
-      {#if kindFilter == "INCIDENT"}
-        <Card.Content class=" newincidents w-full overflow-hidden p-0">
-          {#each data.allRecentIncidents as incident, index}
-            <Incident {incident} lang={data.lang} index="incident-{index}" selectedLang={data.selectedLang} />
-          {/each}
-        </Card.Content>
-      {:else if kindFilter == "MAINTENANCE"}
-        {#each data.allRecentMaintenances as incident, index}
-          <Incident {incident} lang={data.lang} index="incident-{index}" selectedLang={data.selectedLang} />
-        {/each}
-      {/if}
-    </Card.Root>
   </section>
 {/if}
 {#if data.monitors.length > 0}
@@ -230,7 +252,54 @@
     {/each}
   </section>
 {/if}
-<section
+{#if data.allRecentIncidents.length + data.allRecentMaintenances.length > 0}
+  <section
+    class="section-events mx-auto mb-8 flex w-full max-w-[655px] flex-1 flex-col items-start justify-center backdrop-blur-[2px]"
+    id=""
+  >
+    <div class="mb-2 grid w-full grid-cols-2 gap-4">
+      <div class="col-span-2 flex gap-x-2 text-center md:text-left">
+        {#if kindFilter == "INCIDENT"}
+          {#if data.allRecentIncidents.length > 0}
+            <Button class="h-8   text-sm  " on:click={() => kindOfIncidents("INCIDENT")}>
+              {l(data.lang, "Recent Incidents")}
+            </Button>
+          {/if}
+          {#if data.allRecentMaintenances.length > 0}
+            <Button variant="secondary" class=" h-8 text-sm" on:click={() => kindOfIncidents("MAINTENANCE")}>
+              {l(data.lang, "Recent Maintenances")}
+            </Button>
+          {/if}
+        {:else}
+          {#if data.allRecentIncidents.length > 0}
+            <Button variant="secondary" class="h-8  text-sm " on:click={() => kindOfIncidents("INCIDENT")}>
+              {l(data.lang, "Recent Incidents")}
+            </Button>
+          {/if}
+          {#if data.allRecentMaintenances.length > 0}
+            <Button class="h-8  text-sm" on:click={() => kindOfIncidents("MAINTENANCE")}>
+              {l(data.lang, "Recent Maintenances")}
+            </Button>
+          {/if}
+        {/if}
+      </div>
+    </div>
+    <Card.Root class="w-full">
+      {#if kindFilter == "INCIDENT"}
+        <Card.Content class=" newincidents w-full overflow-hidden p-0">
+          {#each data.allRecentIncidents as incident, index}
+            <Incident {incident} lang={data.lang} index="incident-{index}" selectedLang={data.selectedLang} />
+          {/each}
+        </Card.Content>
+      {:else if kindFilter == "MAINTENANCE"}
+        {#each data.allRecentMaintenances as incident, index}
+          <Incident {incident} lang={data.lang} index="incident-{index}" selectedLang={data.selectedLang} />
+        {/each}
+      {/if}
+    </Card.Root>
+  </section>
+{/if}
+<!-- <section
   class="section-browser-events mx-auto mb-2 flex w-full max-w-[655px] flex-1 flex-col items-start justify-center bg-transparent"
   id=""
 >
@@ -248,7 +317,7 @@
       </span>
     </div>
   </a>
-</section>
+</section> -->
 {#if shareMenusToggle}
   <div
     transition:scale={{ duration: 100 }}

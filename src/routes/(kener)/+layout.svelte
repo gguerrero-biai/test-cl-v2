@@ -173,7 +173,7 @@
     <slot />
   </div>
 
-  {#if !!data.site.footerHTML}
+  <!-- {#if !!data.site.footerHTML}
     <footer class="z-10 py-6 md:px-8 md:py-0">
       <div
         class="container relative flex max-w-[655px] flex-col items-center justify-center gap-4 pl-0 md:h-24 md:flex-row"
@@ -185,7 +185,7 @@
         </div>
       </div>
     </footer>
-  {/if}
+  {/if} -->
   <div class="fixed bottom-4 right-4 z-20 flex flex-col rounded-md bg-background">
     {#if !!data.site.tzToggle && data.site.tzToggle === "YES"}
       <div>
@@ -280,11 +280,11 @@
       </div>
     {/if}
   </div>
-  {#if data.isLoggedIn}
+  <!-- {#if data.isLoggedIn}
     <div class="fixed bottom-2 left-2 z-50 md:bottom-8 md:left-8">
       <a href="{base}/manage/app/site" rel="external" class="button-77" role="button"> Manage </a>
     </div>
-  {/if}
+  {/if} -->
 </main>
 
 <style>
