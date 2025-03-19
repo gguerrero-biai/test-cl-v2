@@ -79,7 +79,7 @@ RUN apt-get update && apt-get install -y \
         sqlite3=3.40.1-2+deb12u1 \
         tzdata=2024b-0+deb12u1 \
     # TODO: Is it ok to change to `curl` here so that we don't have to maintain `wget` version mismatch between Debian architectures? (`curl` is only used for the container healthcheck and because there is an Alpine variant (best!) we probably don't care if the Debian image ends up building bigger due to `curl`.)
-    curl=7.88.1-10+deb12u8 && \
+    curl && \
     rm -rf /var/lib/apt/lists/*
 
 FROM node:${ALPINE_VERSION} AS final-alpine
