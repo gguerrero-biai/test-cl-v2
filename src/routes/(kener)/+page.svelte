@@ -1,18 +1,34 @@
 <script>
-  import Monitor from "$lib/components/monitor.svelte";
+  // import Monitor from "$lib/components/monitor.svelte";
+  import MonitorLight from "$lib/components/monitorLigth.svelte";
   import * as Card from "$lib/components/ui/card";
   import { Button, buttonVariants } from "$lib/components/ui/button";
   import Incident from "$lib/components/IncidentNew.svelte";
   import { Badge } from "$lib/components/ui/badge";
   import { l } from "$lib/i18n/client";
   import { base } from "$app/paths";
-  import { ArrowRight, ChevronLeft, X } from "lucide-svelte";
+  import {
+    ArrowRight,
+    ChevronLeft,
+    X,
+    Rocket,
+    CalendarDays,
+    Laptop,
+    Check,
+    CircleDot,
+    Dot,
+    CheckCircle2,
+    XCircle
+  } from "lucide-svelte";
+  import { CheckCircle, AlertCircle } from "lucide-svelte";
   import { hotKeyAction, clickOutsideAction } from "svelte-legos";
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import ShareMenu from "$lib/components/shareMenu.svelte";
   import { scale } from "svelte/transition";
   import { format } from "date-fns";
   import GMI from "$lib/components/gmi.svelte";
+  import ContactFormModal from "$lib/components/contactForm.svelte";
+  import { clsx } from "clsx";
 
   export let data;
 
@@ -40,6 +56,7 @@
   function kindOfIncidents(kind) {
     kindFilter = kind;
   }
+
   if (data.allRecentIncidents.length == 0) {
     kindOfIncidents("MAINTENANCE");
   }
@@ -64,6 +81,16 @@
     }
     return "OK";
   })();
+
+  const getMonitorStatus = (status) => {
+    if (status === "api-down") {
+      return "DOWN";
+    }
+    if (status === "api-degraded") {
+      return "DEGRADED";
+    }
+    return "OK";
+  };
 </script>
 
 <svelte:head>
@@ -82,28 +109,17 @@
     {/each}
   {/if}
 </svelte:head>
-<div class="mt-12"></div>
+
 {#if data.hero}
-  <section class="section-hero mx-auto mb-8 flex w-full max-w-[655px] flex-1 flex-col items-start justify-center">
+  <!-- <section class="section-hero mx-auto mb-8 flex w-full max-w-[655px] flex-1 flex-col items-start justify-center">
     <div class="mx-auto max-w-screen-xl px-4 lg:flex lg:items-center">
       <div class="blurry-bg mx-auto max-w-3xl text-center">
         {#if data.hero.image}
           <GMI src={data.hero.image} classList="m-auto mb-2 h-14 w-14" alt="" srcset="" />
         {/if}
         {#if monitorStatus == "OK"}
-          <div class="flex flex-col gap-5">
-            <div class="relative mx-auto h-fit w-fit">
-              <div class="absolute right-0 top-0 z-10 h-10 w-10 -translate-x-5 translate-y-5 bg-white" />
-              <div class="absolute inset-0 z-0 h-full w-full rounded-full bg-[#2A5AF4] opacity-40 blur-md" />
-              <img src={base + "/check_circle.svg"} class="relative z-20 inline-block h-20 w-20" alt="circle check" />
-            </div>
-            <div>
-              <h1 class="text-2xl">Celes esta en funcionamiento</h1>
-              <p class="color-[#414141] mt-1.5 w-full text-center text-lg">
-                ¿Tienes problemas? envíanos un correo electrónico a
-                <a href="mailto:feedback@slack.com" class="underline">help@biai.com</a>
-              </p>
-            </div>
+          <div class="w-full bg-[#2A5AF4]">
+            <h1>Celes esta en funcionamiento</h1>
           </div>
         {/if}
         {#if monitorStatus == "DEGRADED"}
@@ -116,8 +132,9 @@
             <div>
               <h1 class="text-2xl">Celes tiene errores que no comprometen su funcionamiento</h1>
               <p class="color-[#414141] mt-1.5 w-full text-center text-lg">
-                ¿Tienes problemas? envíanos un correo electrónico a
-                <a href="mailto:feedback@slack.com" class="underline">help@biai.com</a>
+                ¿Tienes problemas? Haz clic <button type="button" class="underline" on:click={openContactModal}>
+                  aquí
+                </button> para contactarnos.
               </p>
             </div>
           </div>
@@ -132,13 +149,14 @@
             <div>
               <h1 class="text-2xl">Celes está caído. Estamos trabajando para solucionarlo</h1>
               <p class="color-[#414141] mt-1.5 w-full text-center text-lg">
-                ¿Tienes problemas? envíanos un correo electrónico a
-                <a href="mailto:feedback@slack.com" class="underline">help@biai.com</a>
+                ¿Tienes problemas? Haz clic <button type="button" class="underline" on:click={openContactModal}>
+                  aquí
+                </button> para contactarnos.
               </p>
             </div>
           </div>
         {/if}
-        <!-- {#if data.hero.title}
+        {#if data.hero.title}
           <h1
             class="bg-gradient-to-r from-white via-[#2A5AF4] to-[#2A5AF4] bg-clip-text text-5xl font-extrabold leading-tight text-transparent"
           >
@@ -149,16 +167,139 @@
           <h2 class="mx-auto mt-4 max-w-xl sm:text-xl">
             {@html data.hero.subtitle}
           </h2>
-        {/if} -->
+        {/if}
       </div>
+    </div>
+  </section> -->
+  <!-- svelte-ignore a11y-no-redundant-roles -->
+  <section id="floating-section" class="flex justify-center py-20" role="region">
+    <div class="flex flex-col items-center">
+      <span class="text-7xl">Tu Copiloto para cadena</span>
+      <span class="text-7xl">de suministro</span>
+    </div>
+  </section>
+  <section class="section-hero relative mx-auto mb-8 w-full max-w-[655px] items-center justify-center">
+    {#if monitorStatus == "OK"}
+      <div class="flex w-full items-center gap-3 rounded-t-sm border border-[#2A5AF4] bg-[#2A5AF4] px-5 py-3">
+        <CheckCircle2 class="fill-white font-extrabold text-[#2A5AF4]" />
+        <h1 class="text-start text-xl font-bold text-white">Celes está en funcionamiento</h1>
+      </div>
+    {/if}
+    {#if monitorStatus == "DEGRADED"}
+      <div class="flex w-full items-center gap-3 rounded-t-sm border border-[#FFA337] bg-[#FFA337] px-5 py-3">
+        <CheckCircle2 class="fill-white font-extrabold text-[#FFA337]" />
+        <h1 class="text-start text-xl font-bold text-white">Celes está presentando problemas</h1>
+      </div>
+    {/if}
+    {#if monitorStatus == "DOWN"}
+      <div class="flex w-full items-center gap-3 rounded-t-sm border border-[#FF554E] bg-[#FF554E] px-5 py-3">
+        <XCircle class="fill-white font-extrabold text-[#FF554E]" />
+        <h1 class="text-start text-xl font-bold text-white">Celes está fuera de servicio</h1>
+      </div>
+    {/if}
+    <div
+      class={clsx(
+        "flex h-auto w-full flex-col gap-3 rounded-b-sm border bg-white px-6 py-8",
+        monitorStatus === "DOWN" && "border-[#FF554E]",
+        monitorStatus === "DEGRADED" && "border-[#FFA337]",
+        monitorStatus === "OK" && "border-[#2A5AF4]"
+      )}
+    >
+      {#each data.allRecentIncidents as incident}
+        <div>
+          <div class="flex w-full gap-1">
+            <span class="font-bold capitalize text-gray-800">{incident.state.toLowerCase()} - </span>
+            <span class="font-normal text-gray-800">{incident.comments[incident.comments.length - 1].comment}</span>
+            <div
+              class={clsx(
+                "ml-1 flex items-center rounded-full px-3 text-sm text-white",
+                monitorStatus === "DOWN" && "bg-[#FF554E]",
+                monitorStatus === "DEGRADED" && "bg-[#FFA337]",
+                monitorStatus === "OK" && "bg-[#2A5AF4]"
+              )}
+            >
+              Incidencia
+            </div>
+          </div>
+          <span class="font-normal text-gray-400">
+            {format(new Date(incident.created_at), "MMM d, yyyy - HH:mm")} UTC
+          </span>
+        </div>
+        <div>
+          {#each incident.comments as comment, index}
+            {#if index < incident.comments.length - 1}
+              <div class="flex flex-col">
+                <div class="flex gap-2">
+                  <div class="flex h-fit w-fit items-start justify-start">
+                    <Dot class="text-gray-500" />
+                  </div>
+                  <div>
+                    <span class="font-normal text-gray-800">
+                      {comment.comment}
+                    </span>
+                    <span class="font-normal text-gray-400">
+                      - {format(new Date(comment.created_at), "MMM d, yyyy - HH:mm")} UTC
+                    </span>
+                  </div>
+                </div>
+              </div>
+            {/if}
+          {/each}
+        </div>
+      {/each}
+
+      {#each data.allRecentMaintenances as maintenance}
+        <div>
+          <div class="flex w-full gap-1">
+            <span class="font-bold capitalize text-gray-800">{maintenance.state.toLowerCase()} - </span>
+            <span class="font-normal text-gray-800"
+              >{maintenance.comments[maintenance.comments.length - 1].comment}</span
+            >
+            <div
+              class={clsx(
+                "ml-1 flex items-center rounded-full px-3 text-sm text-white",
+                monitorStatus === "DOWN" && "bg-[#FF554E]",
+                monitorStatus === "DEGRADED" && "bg-[#FFA337]",
+                monitorStatus === "OK" && "bg-[#2A5AF4]"
+              )}
+            >
+              Mantenimiento
+            </div>
+          </div>
+          <span class="font-normal text-gray-400">
+            {format(new Date(maintenance.created_at), "MMM d, yyyy - HH:mm")} UTC
+          </span>
+        </div>
+        <div>
+          {#each maintenance.comments as comment, index}
+            {#if index < maintenance.comments.length - 1}
+              <div class="flex flex-col">
+                <div class="flex gap-2">
+                  <div class="flex h-fit w-fit items-start justify-start">
+                    <Dot class="text-gray-500" />
+                  </div>
+                  <div>
+                    <span class="font-normal text-gray-800">
+                      {comment.comment}
+                    </span>
+                    <span class="font-normal text-gray-400">
+                      - {format(new Date(comment.created_at), "MMM d, yyyy - HH:mm")} UTC
+                    </span>
+                  </div>
+                </div>
+              </div>
+            {/if}
+          {/each}
+        </div>
+      {/each}
     </div>
   </section>
 {/if}
 {#if data.pageType != "home"}
-  <section class="section-back mx-auto my-2 flex w-full max-w-[655px] flex-1 flex-col items-start justify-center">
+  <section class="section-back mx-auto mb-2 flex w-full max-w-[655px] flex-1 flex-col items-start justify-center">
     <Button
       variant="outline"
-      class="bounce-left h-8   justify-start  pl-1.5"
+      class="bounce-left h-8  justify-start  pl-1.5"
       on:click={() => {
         if (data.pageType == "category") {
           return window.history.back();
@@ -176,51 +317,42 @@
 {/if}
 {#if data.monitors.length > 0}
   <section
-    class="section-legend mx-auto mb-2 flex w-full flex-1 flex-col items-start justify-center bg-transparent md:w-[655px]"
+    class="section-legend mx-auto mb-4 flex w-full flex-1 flex-col items-start justify-center bg-transparent px-2 md:w-[655px]"
     id=""
   >
-    <div class="grid w-full grid-cols-2 gap-4">
-      <div class="col-span-2 text-center md:col-span-1 md:text-left">
-        <Badge class="border-0 md:pl-0" variant="outline">
-          {l(data.lang, "Availability per Component")}
-        </Badge>
-      </div>
-      <div class="col-span-2 text-center md:col-span-1 md:text-right">
-        <Badge variant="outline" class="border-0 md:pr-0">
-          <span class="bg-api-up mr-1 inline-flex h-[8px] w-[8px] rounded-full opacity-75"></span>
-          <span class="mr-3">
-            {l(data.lang, "UP")}
-          </span>
-
-          <span class="bg-api-degraded mr-1 inline-flex h-[8px] w-[8px] rounded-full opacity-75"></span>
-          <span class="mr-3">
-            {l(data.lang, "DEGRADED")}
-          </span>
-
-          <span class="bg-api-down mr-1 inline-flex h-[8px] w-[8px] rounded-full opacity-75"></span>
-          <span class="">
-            {l(data.lang, "DOWN")}
-          </span>
-        </Badge>
-      </div>
-    </div>
+    <span class="text-2xl font-bold"> Estado Actual: Celes.ai </span>
   </section>
-  <section
-    class="section-monitors z-20 mx-auto mb-8 flex w-full flex-1 flex-col items-start justify-center backdrop-blur-[2px] md:w-[655px]"
-  >
-    <Card.Root class="monitor-root">
-      <Card.Content class="monitors-card  p-0">
-        {#each data.monitors as monitor}
-          <Monitor
-            on:show_shareMenu={showShareMenu}
-            {monitor}
-            localTz={data.localTz}
-            lang={data.lang}
-            selectedLang={data.selectedLang}
-          />
+  <section class="section-monitors z-20 mx-auto mb-8 flex w-full flex-1 items-start justify-center md:w-[655px]">
+    <table
+      class="w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-sm border border-gray-500 bg-[#1e1e23]"
+    >
+      <colgroup>
+        <col class="w-1/2" />
+        <col class="w-1/2" />
+      </colgroup>
+      <tbody>
+        {#each Array(Math.ceil(data.monitors.length / 2)) as _, rowIndex}
+          <tr>
+            <!-- First column -->
+            <td class="border-r border-gray-600 p-0">
+              <MonitorLight
+                title={data.monitors[rowIndex * 2].name}
+                variant={getMonitorStatus(data.monitors[rowIndex * 2].pageData.summaryColorClass)}
+              />
+            </td>
+            <!-- Second column, if exists -->
+            {#if data.monitors[rowIndex * 2 + 1]}
+              <td class="p-0">
+                <MonitorLight
+                  title={data.monitors[rowIndex * 2 + 1].name}
+                  variant={getMonitorStatus(data.monitors[rowIndex * 2 + 1].pageData.summaryColorClass)}
+                />
+              </td>
+            {/if}
+          </tr>
         {/each}
-      </Card.Content>
-    </Card.Root>
+      </tbody>
+    </table>
   </section>
 {/if}
 {#if data.site.categories && data.pageType == "home"}
@@ -252,7 +384,7 @@
     {/each}
   </section>
 {/if}
-{#if data.allRecentIncidents.length + data.allRecentMaintenances.length > 0}
+<!-- {#if data.allRecentIncidents.length + data.allRecentMaintenances.length > 0}
   <section
     class="section-events mx-auto mb-8 flex w-full max-w-[655px] flex-1 flex-col items-start justify-center backdrop-blur-[2px]"
     id=""
@@ -298,7 +430,7 @@
       {/if}
     </Card.Root>
   </section>
-{/if}
+{/if} -->
 <!-- <section
   class="section-browser-events mx-auto mb-2 flex w-full max-w-[655px] flex-1 flex-col items-start justify-center bg-transparent"
   id=""
@@ -318,6 +450,7 @@
     </div>
   </a>
 </section> -->
+
 {#if shareMenusToggle}
   <div
     transition:scale={{ duration: 100 }}

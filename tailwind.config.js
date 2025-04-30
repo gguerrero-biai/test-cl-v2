@@ -18,6 +18,25 @@ const config = {
       },
     },
     extend: {
+      animation: {
+        float: "float 10s ease-in-out infinite",
+        "float-left": "floatLeft 8s ease-in-out infinite",
+        "float-right": "floatRight 12s ease-in-out infinite",
+      },
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-20px)" },
+        },
+        floatLeft: {
+          "0%, 100%": { transform: "translate(0, 0)" },
+          "50%": { transform: "translate(-10px, -15px)" },
+        },
+        floatRight: {
+          "0%, 100%": { transform: "translate(0, 0)" },
+          "50%": { transform: "translate(10px, -20px)" },
+        },
+      },
       colors: {
         border: "hsl(var(--border) / <alpha-value>)",
         input: "hsl(var(--input) / <alpha-value>)",

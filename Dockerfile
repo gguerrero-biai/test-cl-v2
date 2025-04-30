@@ -37,7 +37,9 @@ RUN apk add --no-cache --update \
 FROM builder-${VARIANT} AS builder
 
 # Set environment variables
+ARG PUBLIC_HUBSPOT=""
 ENV NPM_CONFIG_LOGLEVEL=error \
+    PUBLIC_HUBSPOT=${PUBLIC_HUBSPOT} \
     VITE_BUILD_ENV=production
 
 # Set the working directory
@@ -94,11 +96,13 @@ ARG PORT=3000 \
     USERNAME=node
 
 # Set environment variables
+ARG PUBLIC_HUBSPOT=""
 ENV HEALTHCHECK_PORT=$PORT \
     HEALTHCHECK_PATH= \
     NODE_ENV=production \
     NPM_CONFIG_LOGLEVEL=error \
     PORT=$PORT \
+    PUBLIC_HUBSPOT=${PUBLIC_HUBSPOT} \
     TZ=Etc/UTC
 
 # Set the working directory

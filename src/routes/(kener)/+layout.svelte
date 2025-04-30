@@ -14,6 +14,7 @@
   import { analyticsEvent } from "$lib/boringOne";
   import { setMode, mode, ModeWatcher } from "mode-watcher";
   import { l } from "$lib/i18n/client";
+  import Footer from "$lib/components/footer.svelte";
 
   export let data;
   let defaultLocaleKey = data.selectedLang;
@@ -186,6 +187,8 @@
       </div>
     </footer>
   {/if} -->
+  <Footer />
+
   <div class="fixed bottom-4 right-4 z-20 flex flex-col rounded-md bg-background">
     {#if !!data.site.tzToggle && data.site.tzToggle === "YES"}
       <div>
