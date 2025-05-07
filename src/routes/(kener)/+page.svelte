@@ -1,33 +1,14 @@
 <script>
-  // import Monitor from "$lib/components/monitor.svelte";
   import MonitorLight from "$lib/components/monitorLigth.svelte";
-  import * as Card from "$lib/components/ui/card";
-  import { Button, buttonVariants } from "$lib/components/ui/button";
-  import Incident from "$lib/components/IncidentNew.svelte";
-  import { Badge } from "$lib/components/ui/badge";
+  import { Button } from "$lib/components/ui/button";
   import { l } from "$lib/i18n/client";
   import { base } from "$app/paths";
-  import {
-    ArrowRight,
-    ChevronLeft,
-    X,
-    Rocket,
-    CalendarDays,
-    Laptop,
-    Check,
-    CircleDot,
-    Dot,
-    CheckCircle2,
-    XCircle
-  } from "lucide-svelte";
-  import { CheckCircle, AlertCircle } from "lucide-svelte";
+  import { ChevronLeft, X, Dot, CheckCircle2, XCircle } from "lucide-svelte";
   import { hotKeyAction, clickOutsideAction } from "svelte-legos";
-  import { onMount, onDestroy } from "svelte";
+  import { onMount } from "svelte";
   import ShareMenu from "$lib/components/shareMenu.svelte";
   import { scale } from "svelte/transition";
   import { format } from "date-fns";
-  import GMI from "$lib/components/gmi.svelte";
-  import ContactFormModal from "$lib/components/contactForm.svelte";
   import { clsx } from "clsx";
 
   export let data;
@@ -90,6 +71,33 @@
       return "DEGRADED";
     }
     return "OK";
+  };
+
+  const hasIncidents = () => {
+    return (
+      data.allRecentIncidents.some((incident) => {
+        return incident.state !== "RESOLVED";
+      }) ||
+      data.allRecentMaintenances.some((maintenance) => {
+        return maintenance.status !== "CLOSED";
+      })
+    );
+  };
+
+  const getIncidentTitle = (incident) => {
+    if (incident.state === "RESOLVED") {
+      return "Resuelto";
+    }
+    if (incident.state === "MONITORING") {
+      return "Monitoreando";
+    }
+    if (incident.state === "IDENTIFIED") {
+      return "Identificado";
+    }
+    if (incident.state === "INVESTIGATING") {
+      return "Investigando";
+    }
+    return incident.state;
   };
 </script>
 
@@ -178,7 +186,7 @@
       <span class="text-7xl">de suministro</span>
     </div>
   </section>
-  <section class="section-hero relative mx-auto mb-8 w-full max-w-[655px] items-center justify-center">
+  <section class="section-hero relative mx-auto mb-8 w-full max-w-[800px] items-center justify-center">
     {#if monitorStatus == "OK"}
       <div class="flex w-full items-center gap-3 rounded-t-sm border border-[#2A5AF4] bg-[#2A5AF4] px-5 py-3">
         <CheckCircle2 class="fill-white font-extrabold text-[#2A5AF4]" />
@@ -197,106 +205,118 @@
         <h1 class="text-start text-xl font-bold text-white">Celes está fuera de servicio</h1>
       </div>
     {/if}
-    <div
-      class={clsx(
-        "flex h-auto w-full flex-col gap-3 rounded-b-sm border bg-white px-6 py-8",
-        monitorStatus === "DOWN" && "border-[#FF554E]",
-        monitorStatus === "DEGRADED" && "border-[#FFA337]",
-        monitorStatus === "OK" && "border-[#2A5AF4]"
-      )}
-    >
-      {#each data.allRecentIncidents as incident}
-        <div>
-          <div class="flex w-full gap-1">
-            <span class="font-bold capitalize text-gray-800">{incident.state.toLowerCase()} - </span>
-            <span class="font-normal text-gray-800">{incident.comments[incident.comments.length - 1].comment}</span>
-            <div
-              class={clsx(
-                "ml-1 flex items-center rounded-full px-3 text-sm text-white",
-                monitorStatus === "DOWN" && "bg-[#FF554E]",
-                monitorStatus === "DEGRADED" && "bg-[#FFA337]",
-                monitorStatus === "OK" && "bg-[#2A5AF4]"
-              )}
-            >
-              Incidencia
-            </div>
-          </div>
-          <span class="font-normal text-gray-400">
-            {format(new Date(incident.created_at), "MMM d, yyyy - HH:mm")} UTC
-          </span>
-        </div>
-        <div>
-          {#each incident.comments as comment, index}
-            {#if index < incident.comments.length - 1}
-              <div class="flex flex-col">
-                <div class="flex gap-2">
-                  <div class="flex h-fit w-fit items-start justify-start">
-                    <Dot class="text-gray-500" />
-                  </div>
+    {#if hasIncidents()}
+      <div
+        class={clsx(
+          "flex h-auto w-full flex-col gap-3 rounded-b-sm border bg-white px-6 py-8",
+          monitorStatus === "DOWN" && "border-[#FF554E]",
+          monitorStatus === "DEGRADED" && "border-[#FFA337]",
+          monitorStatus === "OK" && "border-[#2A5AF4]"
+        )}
+      >
+        {#each data.allRecentIncidents as incident}
+          {#if incident.state !== "RESOLVED"}
+            <div>
+              <div class="flex w-full gap-1">
+                <div class="flex gap-1">
+                  <span class="font-bold capitalize text-gray-800">{getIncidentTitle(incident)}</span>
+                  <span class="font-bold text-gray-800">-</span>
                   <div>
-                    <span class="font-normal text-gray-800">
-                      {comment.comment}
-                    </span>
+                    <span class="text-left font-normal text-gray-800"
+                      >{incident.comments[incident.comments.length - 1].comment}</span
+                    >
+                    <span>-</span>
                     <span class="font-normal text-gray-400">
-                      - {format(new Date(comment.created_at), "MMM d, yyyy - HH:mm")} UTC
+                      {format(new Date(incident.created_at), "MMM d, yyyy - HH:mm")} UTC
                     </span>
                   </div>
                 </div>
+                <div
+                  class={clsx(
+                    "ml-1 flex h-fit items-center rounded-full p-3 text-sm text-white",
+                    monitorStatus === "DOWN" && "bg-[#FF554E]",
+                    monitorStatus === "DEGRADED" && "bg-[#FFA337]",
+                    monitorStatus === "OK" && "bg-[#2A5AF4]"
+                  )}
+                >
+                  Incidencia
+                </div>
               </div>
-            {/if}
-          {/each}
-        </div>
-      {/each}
+            </div>
+            <div>
+              {#each incident.comments as comment, index}
+                {#if index < incident.comments.length - 1}
+                  <div class="flex flex-col">
+                    <div class="flex gap-2">
+                      <div class="flex h-fit w-fit items-start justify-start">
+                        <Dot class="text-gray-500" />
+                      </div>
+                      <div>
+                        <span class="font-normal text-gray-800">
+                          {comment.comment}
+                        </span>
+                        <span class="font-normal text-gray-400">
+                          - {format(new Date(comment.created_at), "MMM d, yyyy - HH:mm")} UTC
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                {/if}
+              {/each}
+            </div>
+          {/if}
+        {/each}
 
-      {#each data.allRecentMaintenances as maintenance}
-        <div>
-          <div class="flex w-full gap-1">
-            <span class="font-bold capitalize text-gray-800">{maintenance.state.toLowerCase()} - </span>
-            <span class="font-normal text-gray-800"
-              >{maintenance.comments[maintenance.comments.length - 1].comment}</span
-            >
-            <div
-              class={clsx(
-                "ml-1 flex items-center rounded-full px-3 text-sm text-white",
-                monitorStatus === "DOWN" && "bg-[#FF554E]",
-                monitorStatus === "DEGRADED" && "bg-[#FFA337]",
-                monitorStatus === "OK" && "bg-[#2A5AF4]"
-              )}
-            >
-              Mantenimiento
+        {#each data.allRecentMaintenances as maintenance}
+          <div>
+            <div class="flex w-full gap-1">
+              <span class="font-bold capitalize text-gray-800">{maintenance.state.toLowerCase()} - </span>
+              <span class="font-normal text-gray-800"
+                >{maintenance.comments[maintenance.comments.length - 1].comment}</span
+              >
+              <div
+                class={clsx(
+                  "ml-1 flex items-center rounded-full px-3 text-sm text-white",
+                  monitorStatus === "DOWN" && "bg-[#FF554E]",
+                  monitorStatus === "DEGRADED" && "bg-[#FFA337]",
+                  monitorStatus === "OK" && "bg-[#2A5AF4]"
+                )}
+              >
+                Mantenimiento
+              </div>
             </div>
+            <span class="font-normal text-gray-400">
+              {format(new Date(maintenance.created_at), "MMM d, yyyy - HH:mm")} UTC
+            </span>
           </div>
-          <span class="font-normal text-gray-400">
-            {format(new Date(maintenance.created_at), "MMM d, yyyy - HH:mm")} UTC
-          </span>
-        </div>
-        <div>
-          {#each maintenance.comments as comment, index}
-            {#if index < maintenance.comments.length - 1}
-              <div class="flex flex-col">
-                <div class="flex gap-2">
-                  <div class="flex h-fit w-fit items-start justify-start">
-                    <Dot class="text-gray-500" />
-                  </div>
-                  <div>
-                    <span class="font-normal text-gray-800">
-                      {comment.comment}
-                    </span>
-                    <span class="font-normal text-gray-400">
-                      - {format(new Date(comment.created_at), "MMM d, yyyy - HH:mm")} UTC
-                    </span>
+          <div>
+            {#each maintenance.comments as comment, index}
+              {#if index < maintenance.comments.length - 1}
+                <div class="flex flex-col">
+                  <div class="flex gap-2">
+                    <div class="flex h-fit w-fit items-start justify-start">
+                      <Dot class="text-gray-500" />
+                    </div>
+                    <div>
+                      <span class="font-normal text-gray-800">
+                        {comment.comment}
+                      </span>
+                      <span class="font-normal text-gray-400">
+                        - {format(new Date(comment.created_at), "MMM d, yyyy - HH:mm")} UTC
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            {/if}
-          {/each}
-        </div>
-      {/each}
-    </div>
+              {/if}
+            {/each}
+          </div>
+        {/each}
+      </div>
+    {/if}
   </section>
 {/if}
 {#if data.pageType != "home"}
-  <section class="section-back mx-auto mb-2 flex w-full max-w-[655px] flex-1 flex-col items-start justify-center">
+  <section class="section-back mx-auto mb-2 flex w-full max-w-[800px] flex-1 flex-col items-start justify-center">
     <Button
       variant="outline"
       class="bounce-left h-8  justify-start  pl-1.5"
@@ -317,12 +337,12 @@
 {/if}
 {#if data.monitors.length > 0}
   <section
-    class="section-legend mx-auto mb-4 flex w-full flex-1 flex-col items-start justify-center bg-transparent px-2 md:w-[655px]"
+    class="section-legend mx-auto mb-4 flex w-full flex-1 flex-col items-start justify-center bg-transparent px-2 md:w-[800px]"
     id=""
   >
     <span class="text-2xl font-bold"> Estado Actual: Celes.ai </span>
   </section>
-  <section class="section-monitors z-20 mx-auto mb-8 flex w-full flex-1 items-start justify-center md:w-[655px]">
+  <section class="section-monitors z-20 mx-auto mb-8 flex w-full flex-1 items-start justify-center md:w-[800px]">
     <table
       class="w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-sm border border-gray-500 bg-[#1e1e23]"
     >
@@ -355,9 +375,9 @@
     </table>
   </section>
 {/if}
-{#if data.site.categories && data.pageType == "home"}
+<!-- {#if data.site.categories && data.pageType == "home"}
   <section
-    class="section-categories relative z-10 mx-auto mb-8 w-full max-w-[890px] flex-1 flex-col items-start backdrop-blur-[2px] md:w-[655px]"
+    class="section-categories relative z-10 mx-auto mb-8 w-full max-w-[800px] flex-1 flex-col items-start backdrop-blur-[2px] md:w-[800px]"
   >
     {#each data.site.categories.filter((e) => e.name != "Home") as category}
       <a href={`?category=${category.name}`} rel="external">
@@ -383,7 +403,7 @@
       </a>
     {/each}
   </section>
-{/if}
+{/if} -->
 <!-- {#if data.allRecentIncidents.length + data.allRecentMaintenances.length > 0}
   <section
     class="section-events mx-auto mb-8 flex w-full max-w-[655px] flex-1 flex-col items-start justify-center backdrop-blur-[2px]"

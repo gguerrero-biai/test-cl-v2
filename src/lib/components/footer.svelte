@@ -1,9 +1,9 @@
 <script>
-  import { Facebook, FacebookIcon, Instagram, Linkedin, LinkedinIcon } from "lucide-svelte";
+  import { FacebookIcon, Instagram, Linkedin } from "lucide-svelte";
 </script>
 
 <footer class="relative flex h-auto w-full py-10">
-  <div class="mx-auto flex w-full max-w-[700px] flex-col items-start gap-10">
+  <div class="mx-auto flex w-full max-w-[900px] flex-col items-start gap-10">
     <img
       src="https://cdn.prod.website-files.com/627ecc04245142f2f8f9f2e4/67bd099091e3f087d1d39cc6_Layer%201%20(2).png"
       alt="celes logo"

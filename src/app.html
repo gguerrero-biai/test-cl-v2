@@ -1,12 +1,20 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-		%sveltekit.head%
-	</head>
-	<body data-sveltekit-preload-data="hover">
-		<div style="display: contents">%sveltekit.body%</div>
-	</body>
+    %sveltekit.head%
+
+    <meta name="og:site_name" content="Celes Status Page" />
+    <meta
+      name="description"
+      content="Consulta en tiempo real el estado operativo de nuestros servicios en Celes. Mantente informado sobre incidentes, mantenimientos programados y el rendimiento general de la plataforma."
+    />
+    <meta name="og:image" content="https://dev.app.celes.ai/favicon.ico" />
+    <meta name="og:type" content="website" />
+  </head>
+  <body data-sveltekit-preload-data="hover">
+    <div style="display: contents">%sveltekit.body%</div>
+  </body>
 </html>

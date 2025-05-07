@@ -1,7 +1,7 @@
 <script>
   import { Button } from "$lib/components/ui/button";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-  import { Languages, Menu } from "lucide-svelte";
+  import { Menu } from "lucide-svelte";
   import { base } from "$app/paths";
   import { analyticsEvent } from "$lib/boringOne";
   import GMI from "$lib/components/gmi.svelte";
@@ -23,8 +23,8 @@
   <div class="{defaultPattern}-pattern"></div>
 </div>
 
-<header class="blurry-bg sticky top-0 z-50 mx-auto">
-  <div class="container flex h-16 max-w-full items-center border bg-card px-3 md:rounded-md">
+<header class="blurry-bg sticky top-3 z-50 mx-auto">
+  <div class="container flex h-16 max-w-[970px] items-center border bg-card px-3 md:rounded-md">
     <a rel="external" href={data.site.home ? data.site.home : base}>
       <GMI src={data.site.logo} classList="w-8" alt={data.site.title} srcset="" />
     </a>
