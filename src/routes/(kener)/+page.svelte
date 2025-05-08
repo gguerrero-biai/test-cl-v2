@@ -99,6 +99,17 @@
     }
     return incident.state;
   };
+
+  const monitorDisplay = [data.monitors[0], data.monitors[1]];
+  $: lastRowIndex = Math.ceil(data.monitors.length / 2) - 1;
+  const monitorsGroup = data.monitors
+    .filter((monitor) => monitor.tag.includes("api") && monitor.name !== "APIs")
+    ?.map((monitor) => {
+      return {
+        title: monitor.name,
+        variant: getMonitorStatus(monitor.pageData.summaryColorClass)
+      };
+    });
 </script>
 
 <svelte:head>
@@ -343,9 +354,7 @@
     <span class="text-2xl font-bold"> Estado Actual: Celes.ai </span>
   </section>
   <section class="section-monitors z-20 mx-auto mb-8 flex w-full flex-1 items-start justify-center md:w-[800px]">
-    <table
-      class="w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-sm border border-gray-500 bg-[#1e1e23]"
-    >
+    <table class="w-full table-fixed border-separate border-spacing-0 overflow-hidden">
       <colgroup>
         <col class="w-1/2" />
         <col class="w-1/2" />
@@ -353,19 +362,27 @@
       <tbody>
         {#each Array(Math.ceil(data.monitors.length / 2)) as _, rowIndex}
           <tr>
-            <!-- First column -->
-            <td class="border-r border-gray-600 p-0">
+            <td class="p-0">
               <MonitorLight
                 title={data.monitors[rowIndex * 2].name}
                 variant={getMonitorStatus(data.monitors[rowIndex * 2].pageData.summaryColorClass)}
+                description={data.monitors[rowIndex * 2].description}
+                {rowIndex}
+                colIndex={0}
+                {lastRowIndex}
+                monitorLength={data.monitors.length}
               />
             </td>
-            <!-- Second column, if exists -->
             {#if data.monitors[rowIndex * 2 + 1]}
-              <td class="p-0">
+              <td class="border-gray-600 p-0">
                 <MonitorLight
                   title={data.monitors[rowIndex * 2 + 1].name}
                   variant={getMonitorStatus(data.monitors[rowIndex * 2 + 1].pageData.summaryColorClass)}
+                  description={data.monitors[rowIndex * 2].description}
+                  {rowIndex}
+                  colIndex={1}
+                  {lastRowIndex}
+                  monitorLength={data.monitors.length}
                 />
               </td>
             {/if}

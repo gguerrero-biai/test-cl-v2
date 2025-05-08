@@ -1,12 +1,32 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
-  const hubspotId = import.meta.env.VITE_PUBLIC_HUBSPOT;
+  import { base } from "$app/paths";
+  import axios from "axios";
+  import { createEventDispatcher, onMount } from "svelte";
+
+  let hubspotId = "";
+
   const dispatch = createEventDispatcher();
 
+  function loadPublicId() {
+    axios
+      .get(`${base}/api/hubspot`)
+      .then((response) => {
+        if (response.data) {
+          hubspotId = response.data.publicHubspot;
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
   function close() {
-    console.log(import.meta.env);
     dispatch("close");
   }
+
+  onMount(async () => {
+    loadPublicId();
+  });
 </script>
 
 <div class="fixed inset-0 z-50 flex items-center justify-center">
